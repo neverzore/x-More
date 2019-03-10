@@ -1,0 +1,126 @@
+## app
+server:
+  port: 8443
+  ssl:
+    key-alias: xMore
+    key-store-password: xmoresecret
+    key-store-type: JKS
+    key-store: classpath:keystore.jks
+
+x-more:
+  index: classpath:/templates/login.html
+  mapper-location: tech.never.more.xmore.**.mapper*
+
+## spring
+spring:
+  devtools:
+    restart:
+      enabled: true
+
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    
+
+  session:
+    store-type: redis
+
+  profiles:
+    active: dev
+
+  datasource:
+    default-type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initial-size: 5
+      max-active: 30
+      min-idle: 5
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1 FROM DUAL
+      # 建议配置为true，不影响性能，并且保证安全性。申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效。
+      test-while-idle: true
+      # 申请连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能
+      test-on-borrow: false
+      # 归还连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能。
+      test-on-return: false
+      # 是否缓存preparedStatement，也就是PSCache。PSCache对支持游标的数据库性能提升巨大，比如说oracle。在mysql下建议关闭。
+      pool-prepared-statements: true
+      filters: stat,wall
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
+      stat-view-servlet:
+        enabled: false
+      web-stat-filter:
+        enabled: false
+
+## jwt
+jwt:
+  secret: 4DFF4EA340F0A823F15D3F4F01AB62EAE0E5DA579CCB851F8DB9DFE84C58B2B37B89903A740E1EE172DA793A6E79D560E5F7F9BD058A12A280433ED6FA46510A
+  expire: 6000000
+
+## logging
+log:
+  path: logs
+
+logging:
+  config: classpath:config/logback.xml
+
+#mybatis
+mybatis-plus:
+  mapper-locations: classpath:/mapper/*Mapper.xml
+  #实体扫描，多个package用逗号或者分号分隔
+  typeAliasesPackage: tech.never.more.xmore.**.entity
+  typeEnumsPackage: tech.never.more.xmore.**.entity.enums
+  global-config:
+    # 数据库相关配置
+    db-config:
+      #主键类型  AUTO:"数据库ID自增", INPUT:"用户输入ID",ID_WORKER:"全局唯一ID (数字类型唯一ID)", UUID:"全局唯一ID UUID";
+      id-type: id_worker
+      #字段策略 IGNORED:"忽略判断",NOT_NULL:"非 NULL 判断"),NOT_EMPTY:"非空判断"
+      field-strategy: not_empty
+      #驼峰下划线转换
+      column-underline: true
+      #数据库大写下划线转换
+      #capital-mode: true
+      #逻辑删除配置
+      logic-delete-value: 0
+      logic-not-delete-value: 1
+      db-type: mysql
+    #刷新mapper 调试神器
+    refresh: true
+  # 原生配置
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+
+---
+spring:
+  profiles: dev
+  datasource:
+    druid:
+      url: jdbc:mysql://localhost:3306/xmore?useUnicode=true&characterEncoding=utf-8&useSSL=false
+      username: root
+      password: server4all
+      driver-class-name: com.mysql.jdbc.Driver
+x-more:
+  datasource:
+    dynamic:
+      enable: false
+      source:
+        names: ds1
+        ## 这里默认能正确配置，代码里面不再校验了
+        ds1:
+          name: ds1
+          url: jdbc:mysql://localhost:3306/xmore2?useUnicode=true&characterEncoding=utf-8&useSSL=false
+          username: root
+          password: server4all
+          driver-class-name: com.mysql.jdbc.Driver
+
+---
+spring:
+  profiles: test
+
+---
+spring:
+  profiles: prod
